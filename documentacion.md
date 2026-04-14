@@ -238,6 +238,14 @@ Valores permitidos:
 
 # 6. Clasificación de Datos
 
+| Tabla        | Clasificación sugerida     | Comentario    |
+| -------------| ---------------------------| --------------|
+| `conciertos` |                            |               |
+| `artistas`   |                            |               |
+| `lugares`    |                            |               |
+| `participan` |                            |               |
+
+
 # 7. Diagrama Entidad–Relación (Mermaid)
 
 ```mermaid
