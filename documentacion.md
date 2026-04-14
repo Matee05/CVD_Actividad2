@@ -48,7 +48,7 @@ CHECK (VALUE IN ('PRINCIPAL', 'INVITADO'));
 | Campo          | Tipo         | Nulo |PK |UK |FK | Descripción |
 |----------------|--------------|------|---|---|---|-------------|          
 | id_artista     | SERIAL       | No   | ✔ | - | - |Identificador único|    
-| nombre_artista | VARCHAR(255) | No   | - | ✔ | - |Nombre único|
+| nombre_artista | VARCHAR(255) | No   | - | ✔ | - |Nombre único del solista o banda|
 | email_contacto |dom_email     | No   | - | ✔ | - |Email de contacto único|
 | cuit           |dom_cuit      | No   | - | ✔ | - |CUIT único|
 | genero         |INTEGER       | No   | - | - | ✔ |FK a generos|
@@ -76,7 +76,7 @@ CONSTRAINT ck_artistas_nombre UNIQUE (nombre_artista)
 
 **Normalización:** 
 El valor debe almacenarse:
-- Respetando la forma original del nombre artístico.
+- Respetando el uso de mayúsculas y minúsculas original del nombre artístico.
 - Sin espacios al inicio ni al final.
 ```sql
 TRIM(nombre_artista)
@@ -186,14 +186,15 @@ Ejemplos válidos:
 | `30-82416434-2` | 
 
 Ejemplos inválidos:
-| Valor ingresado       | Motivo                                |
-| ----------------------| --------------------------------------|
-| `20123456783`         | Faltan separadores (`-`)              |
-| `20-1234567-3`        | Cantidad incorrecta de dígitos        |
-| `AA-12345678-3`       | Contiene caracteres no numéricos      |
-| `20_12345678_3`       | Separadores incorrectos (`_`)         |
-| `20-12345678`         | Falta separador (`-`) y último dígito |
-| `20-12345678-3 `      | Contiene espacios                     |
+| Valor ingresado       | Motivo                                    |
+| ----------------------| ------------------------------------------|
+| `20123456783`         | Faltan separadores (`-`)                  |
+| `20-1234567-3`        | Cantidad incorrecta de dígitos            |
+| `AA-12345678-3`       | Contiene caracteres no numéricos          |
+| `20_12345678_3`       | Separadores incorrectos (`_`)             |
+| `20-12345678`         | Falta separador (`-`) y dígito verificador|
+| `12345678-3`          | Falta prefijo y separador (`-`)           |
+| `20-12345678-3 `      | Contiene espacios                         |
 
 ---
 ## Tabla: participan
@@ -209,7 +210,7 @@ Ejemplos inválidos:
 | rol          | rol_dom | No   | - | -  | - | Rol del artista en el concierto|
 
 ```sql
-CONSTRAINT ck_participan UNIQUE (artista,concierto); --CK compuesta
+CONSTRAINT ck_participan UNIQUE (artista,concierto); -- CK/AK compuesta
 CONSTRAINT fk_participan_artista FOREIGN KEY (artista) REFERENCES artistas(id_artista) ON UPDATE NO ACTION ON DELETE NO ACTION;
 CONSTRAINT fk_participan_concierto FOREIGN KEY (concierto) REFERENCES conciertos(id_concierto) ON UPDATE NO ACTION ON DELETE NO ACTION;
 ```
