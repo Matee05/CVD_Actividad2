@@ -239,3 +239,47 @@ Valores permitidos:
 # 6. Clasificación de Datos
 
 # 7. Diagrama Entidad–Relación (Mermaid)
+
+```mermaid
+erDiagram
+
+CONCIERTOS {
+    serial id_concierto PK
+    text nombre_concierto 
+    text descripcion
+    date fecha
+    time hora_inicio
+    time hora_fin
+    integer capacidad_vendida
+    integer lugar FK
+}
+
+ARTISTAS {
+    serial id_artista PK
+    varchar(255) nombre_artista
+    dom_email[varchar(255)] email_contacto
+    dom_cuit[varchar(13)] cuit
+    integer genero FK
+}
+
+PARTICIPAN {
+    serial id_participa PK
+    integer artista FK
+    integer concierto FK
+    rol_dom[varchar(10)] rol
+}
+
+LUGARES {
+    serial id_lugar PK
+    varchar(255) nombre_lugar
+    dom_email[varchar(255)] email_contacto
+    varchar(255) direccion
+    integer capacidad_total
+    integer ciudad FK 
+}
+
+CONCIERTOS }o--|| LUGARES : se_realiza_en
+ARTISTAS ||--o{ PARTICIPAN : participa
+CONCIERTOS ||--|{ PARTICIPAN : tiene_la_participacion
+
+```
