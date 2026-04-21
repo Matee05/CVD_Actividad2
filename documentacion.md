@@ -234,7 +234,193 @@ Valores permitidos:
 - `INVITADO`
 
 ---
+## Tabla: conciertos
 
+**Tipo:** Dato Transaccional
+
+| Campo          | Tipo         | Nulo |PK |UK |FK | Descripción |
+|----------------|--------------|------|---|---|---|-------------|          
+| id_concierto   | INTEGER      | No   | ✔ | - | - |Identificador único|    
+| nombre_concierto| TEXT        | No   | - | ✔ | - |Nombre del evento
+|descripcion     | TEXT         | Si   | - | - | - | Detalles adicionales del show|
+| fecha          |DATE          | No   | - | ✔ | - |Fecha de realización|
+ hora_inicio     |TIME          | No   | - | ✔ | - |Hora de comienzo|
+| hora_fin       |TIME          | Si   | - | - | - |Hora estimada de finalización|
+| capacidad_vendida|INTEGER     | No   | - | - | - |Cantidad de tickets emitidos|
+| lugar          |INTEGER       | No   | - | - | ✔ |FK a la tabla lugares|
+
+```sql
+CONSTRAINT fk_concierto_lugar FOREIGN KEY (lugar) REFERENCES lugares(id_lugar) ON UPDATE NO ACTION ON DELETE NO ACTION;
+
+```
+
+### Reglas de Validación — Conciertos
+
+#### Campo: `nombre_concierto`
+**Descripción:**  
+Nombre único que identifica al evento.
+
+**Tipo de dato:** `TEXT`
+
+**Obligatoriedad:**
+Requerido (`NOT NULL`)
+
+**Unicidad:** 
+Forma parte de una clave única compuesta junto con fecha y hora_inicio.
+```sql
+CONSTRAINT ck_conciertos UNIQUE (nombre_concierto, fecha, hora_inicio)
+```
+
+**Normalización:** 
+El valor debe almacenarse:
+-Sin espacios al inicio ni al final.
+- Se respeta mayúsculas/minúsculas según el nombre artístico del evento.
+```sql
+TRIM(nombre_concierto)
+``` 
+Validación:
+No se permiten cadenas vacías.
+
+
+
+#### Campo: `descripcion`
+**Descripción:**  
+Detalles adicionales del concierto.
+
+**Tipo de dato:** `TEXT`
+
+**Obligatoriedad:**
+Opcional (`NULL permitido`)
+
+**Unicidad:** 
+No aplica
+
+**Normalización:** 
+El valor debe almacenarse:
+- Sin espacios al inicio ni al final.
+```sql
+TRIM(descripcion)
+``` 
+
+**Validación:**  
+Si se proporciona, no puede ser una cadena vacía.
+```sql
+CONSTRAINT chk_descripcion_no_vacia CHECK (descripcion IS NULL OR descripcion <> '')
+``` 
+
+#### Campo: `fecha`
+**Descripción:**  
+Fecha en que se realiza el concierto.
+
+**Tipo de dato:** `DATE`
+
+**Obligatoriedad:**
+Requerido (`NOT NULL`)
+
+**Unicidad:**
+No es único por sí mismo. Forma parte de una clave única compuesta junto con nombre_concierto y hora_inicio.
+```sql
+CONSTRAINT ck_conciertos UNIQUE (nombre_concierto, fecha, hora_inicio)
+``` 
+
+**Validación:**
+No se permiten fechas pasadas (regla de negocio: el concierto no puede ser en el pasado).
+```sql
+CONSTRAINT chk_fecha_futura CHECK (fecha >= CURRENT_DATE)
+```
+
+**Formato requerido:**
+```
+YYYY-MM-DD
+```
+
+EJEMPLOS VALIDOS
+
+
+#### Campo: `hora_inicio`
+**Descripción:**  
+Hora de comienzo del concierto.
+
+**Tipo de dato:** `TIME`
+
+**Obligatoriedad:**
+Requerido (`NOT NULL`)
+
+**Unicidad:**
+No es único por sí mismo. Forma parte de una clave única compuesta junto con nombre_concierto y fecha.
+```sql
+CONSTRAINT ck_conciertos UNIQUE (nombre_concierto, fecha, hora_inicio)
+```
+
+**Normalización:**  
+El valor debe almacenarse en formato de 24 horas.
+
+**Validación:**
+No se permiten horas negativas o inexistentes 
+
+**Formato requerido:**
+```
+HH:MI:SS
+```
+
+EJEMPLOS
+
+#### Campo: `hora_fin`
+
+**Descripción:**  
+Hora de finalización del concierto.
+**Tipo de dato:** `TIME`
+
+**Obligatoriedad:**
+Opcional (`NULL permitidos`)
+
+**Formato requerido:**
+HH:MI:SS
+
+**Normalización:**  
+El valor debe almacenarse en formato de 24 horas.
+
+**Validación:**  
+Si se especifica, debe ser mayor que hora_inicio.
+```sql
+CONSTRAINT chk_horario_valido CHECK ((hora_fin IS NULL) OR (hora_inicio < hora_fin))
+```
+
+
+#### Campo: `capacidad_vendida`
+
+**Descripción:**  
+Cantidad de entradas vendidas para el concierto.
+**Tipo de dato:** `INTEGER`
+
+**Obligatoriedad:**
+Requerido (`NOT NULL`)
+
+**Validación:**  
+No puede ser negativo
+```sql
+CONSTRAINT conciertos_capacidad_vendida_check CHECK ((capacidad_vendida >= 0))
+```
+
+
+#### Campo: `lugar`
+
+**Descripción:**  
+Referencia al lugar físico donde se realiza el concierto.
+**Tipo de dato:** `INTEGER`
+
+**Obligatoriedad:**
+Requerido (`NOT NULL`)
+
+**Validación:**  
+El valor debe existir en la tabla lugares
+```sql
+CONSTRAINT fk_concierto_lugar FOREIGN KEY (lugar) REFERENCES lugares(id_lugar) ON UPDATE NO ACTION ON DELETE NO ACTION
+```
+**Referencia:** `lugares(id_lugar)`
+
+
+---
 # 5. Reglas de Calidad de Datos
 
 # 6. Clasificación de Datos
