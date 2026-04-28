@@ -8,9 +8,25 @@
 
 # 1. Descripción del modelo
 
-La base de datos...
+La base de datos del Sistema de Gestión de Conciertos tiene como objetivo gestionar de manera estructurada la información central de la plataforma: conciertos, artistas, lugares, clientes, tipos de entradas, compras y la relación entre artistas y conciertos.
+
+Su diseño permite almacenar eventos musicales, administrar relaciones entre entidades (por ejemplo, qué artista participa en cada concierto, en qué lugar se realiza, qué clientes compran entradas) y garantizar integridad, consistencia y trazabilidad de los datos.
+
+El modelo fue pensado bajo principios de normalización y buenas prácticas relacionales, asegurando escalabilidad, calidad de datos y soporte para futuras funcionalidades del sistema.
 
 # 2. Información General
+Sistema transaccional (OLTP) destinado a la gestión de:
+
+    -Conciertos
+    -Artistas
+    -Lugares
+    -Clientes
+    -Tipos de entradas
+    -Compras
+    -Participación de artistas en conciertos
+
+Dominio de negocio: Gestión de eventos musicales y venta de entradas.
+---
 
 # 3. Dominios Definidos
 
