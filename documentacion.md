@@ -1,8 +1,10 @@
-# Diccionario de Datos  
+# Diccionario de Datos
+
 ## Sistema de Gestión de Conciertos
+
 **Entorno:** PostgreSQL 18  
-**Versión:** 1.0    
-**Año:** 2026    
+**Versión:** 1.0  
+**Año:** 2026  
 **Mes:** Abril  
 **Responsable:** Grupo 2 (Mateo Salcedo, Tobias Centurion, Camila Tenorio)
 
@@ -10,11 +12,12 @@
 
 La base de datos del Sistema de Gestión de Conciertos tiene como objetivo gestionar de manera estructurada la información central de la plataforma: conciertos, artistas, lugares, clientes, tipos de entradas, compras y la relación entre artistas y conciertos. Además, incorpora ciudades y provincias asociadas a los lugares donde se realizan los conciertos y a los clientes, así como géneros musicales correspondientes a cada artista.
 
-Su diseño permite almacenar eventos musicales, administrar relaciones entre entidades (por ejemplo: qué artista participa en cada concierto; en qué lugar se realiza, junto con la ciudad y provincia donde se ubica; y qué clientes compran entradas) y garantizar integridad, consistencia y trazabilidad de los datos. 
+Su diseño permite almacenar eventos musicales, administrar relaciones entre entidades (por ejemplo: qué artista participa en cada concierto; en qué lugar se realiza, junto con la ciudad y provincia donde se ubica; y qué clientes compran entradas) y garantizar integridad, consistencia y trazabilidad de los datos.
 
 El modelo fue pensado bajo principios de normalización y buenas prácticas relacionales, asegurando escalabilidad, calidad de datos y soporte para futuras funcionalidades del sistema.
 
 # 2. Información General
+
 Sistema transaccional (OLTP) destinado a la gestión de:
 
 - Conciertos
@@ -27,30 +30,35 @@ Sistema transaccional (OLTP) destinado a la gestión de:
 - Ciudades y provincias
 - Géneros musicales
 
-Dominio de negocio: Gestión de eventos musicales y venta de entradas.
----
+## Dominio de negocio: Gestión de eventos musicales y venta de entradas.
 
 # 3. Dominios Definidos
 
 ## 3.1. dom_cuit
+
 - Tipo base: `VARCHAR(13)`
 - Permite valores que cumplan la expresión regular: `^[0-9]{2}-[0-9]{8}-[0-9]$`
+
 ```sql
 CONSTRAINT chk_dom_cuit CHECK (VALUE ~ '^[0-9]{2}-[0-9]{8}-[0-9]$');
 ```
 
 ## 3.2. dom_email
+
 - Tipo base: `VARCHAR(255)`
 - Permite valores que cumplan la expresión regular: `^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$`
+
 ```sql
 CONSTRAINT chk_dom_email CHECK (VALUE ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
 ```
 
 ## 3.3. rol_dom
+
 - Tipo base: `VARCHAR(10)`
 - Valores permitidos:
   - PRINCIPAL
   - INVITADO
+
 ```sql
 CHECK (VALUE IN ('PRINCIPAL', 'INVITADO'));
 ```
@@ -63,13 +71,13 @@ CHECK (VALUE IN ('PRINCIPAL', 'INVITADO'));
 
 **Tipo:** Dato maestro
 
-| Campo          | Tipo         | Nulo |PK |UK |FK | Descripción |
-|----------------|--------------|------|---|---|---|-------------|          
-| id_artista     | SERIAL       | No   | ✔ | - | - |Identificador único|    
-| nombre_artista | VARCHAR(255) | No   | - | ✔ | - |Nombre único del solista o banda|
-| email_contacto |dom_email     | No   | - | ✔ | - |Email de contacto único|
-| cuit           |dom_cuit      | No   | - | ✔ | - |CUIT único|
-| genero         |INTEGER       | No   | - | - | ✔ |FK a generos|
+| Campo          | Tipo         | Nulo | PK  | UK  | FK  | Descripción                      |
+| -------------- | ------------ | ---- | --- | --- | --- | -------------------------------- |
+| id_artista     | SERIAL       | No   | ✔   | -   | -   | Identificador único              |
+| nombre_artista | VARCHAR(255) | No   | -   | ✔   | -   | Nombre único del solista o banda |
+| email_contacto | dom_email    | No   | -   | ✔   | -   | Email de contacto único          |
+| cuit           | dom_cuit     | No   | -   | ✔   | -   | CUIT único                       |
+| genero         | INTEGER      | No   | -   | -   | ✔   | FK a generos                     |
 
 ```sql
 CONSTRAINT fk_genero_artista FOREIGN KEY (genero) REFERENCES generos(id_genero) ON UPDATE NO ACTION ON DELETE NO ACTION;
@@ -78,6 +86,7 @@ CONSTRAINT fk_genero_artista FOREIGN KEY (genero) REFERENCES generos(id_genero) 
 ### Reglas de Validación — Artistas
 
 #### Campo: `nombre_artista`
+
 **Descripción:**  
 Nombre del artista (solista o banda).
 
@@ -86,22 +95,25 @@ Nombre del artista (solista o banda).
 **Obligatoriedad:**
 Requerido (`NOT NULL`)
 
-**Unicidad:** 
+**Unicidad:**
 Debe ser único dentro de la tabla (`UNIQUE`)
+
 ```sql
 CONSTRAINT ck_artistas_nombre UNIQUE (nombre_artista)
 ```
 
-**Normalización:** 
+**Normalización:**
 El valor debe almacenarse:
+
 - Respetando el uso de mayúsculas y minúsculas original del nombre artístico.
 - Sin espacios al inicio ni al final.
+
 ```sql
 TRIM(nombre_artista)
-``` 
-
+```
 
 #### Campo: `email_contacto`
+
 **Descripción:**  
 Dirección de correo electrónico de contacto del artista.
 
@@ -110,23 +122,28 @@ Dirección de correo electrónico de contacto del artista.
 **Obligatoriedad:**
 Requerido (`NOT NULL`)
 
-**Unicidad:** 
+**Unicidad:**
 Debe ser único dentro de la tabla (`UNIQUE`)
+
 ```sql
 CONSTRAINT ck_artistas_email UNIQUE (email_contacto)
 ```
 
 **Normalización:**  
 El valor debe almacenarse:
+
 - Sin espacios al inicio ni al final.
 - Sin espacios internos.
 - Convertido a minúsculas.
+
 ```sql
 LOWER(TRIM(email_contacto))
 ```
+
 **Validación:**
 El valor se valida mediante el dominio `dom_email`.
 Debe corresponder a una dirección de correo electrónico válida según el formato general:
+
 - Debe contener exactamente un carácter @.
 - Debe existir una parte local antes de @.
 - Debe existir un dominio válido después de @.
@@ -134,33 +151,34 @@ Debe corresponder a una dirección de correo electrónico válida según el form
 - No debe permitir espacios.
 
 **Formato requerido:**
+
 ```
 local_part@dominio.ext
 ```
 
 Expresión regular:
+
 ```regex
 ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$
 ```
 
 Ejemplos válidos:
-| Valor ingresado             | Valor almacenado            |
+| Valor ingresado | Valor almacenado |
 | --------------------------- | --------------------------- |
-| `juan.perez@example.com`    | `juan.perez@example.com`    |
+| `juan.perez@example.com` | `juan.perez@example.com` |
 | `Maria_Gomez99@empresa.com` | `maria_gomez99@empresa.com` |
-| `USER+TEST@GMAIL.COM`       | `user+test@gmail.com`       |
+| `USER+TEST@GMAIL.COM` | `user+test@gmail.com` |
 
 Ejemplos inválidos:
-| Valor ingresado       | Motivo                        |
+| Valor ingresado | Motivo |
 | ----------------------| ------------------------------|
-| `juan.perez`          |Falta `@` y dominio            |
-| `juan@`               | Falta dominio                 |
-| `@empresa.com`        | Falta parte local             |
-| `juan @empresa.com`   | Contiene espacios             |
-| `juan@empresa`        | Falta extensión del dominio   |
-| `juan@empresa.c`      | Extensión demasiado corta     |
-| `juan@@empresa.com`   | Contiene más de un `@`        |
-
+| `juan.perez` |Falta `@` y dominio |
+| `juan@` | Falta dominio |
+| `@empresa.com` | Falta parte local |
+| `juan @empresa.com` | Contiene espacios |
+| `juan@empresa` | Falta extensión del dominio |
+| `juan@empresa.c` | Extensión demasiado corta |
+| `juan@@empresa.com` | Contiene más de un `@` |
 
 #### Campo: `cuit`
 
@@ -172,8 +190,9 @@ CUIT (Clave Única de Identificación Tributaria) del artista.
 **Obligatoriedad:**
 Requerido (`NOT NULL`)
 
-**Unicidad:** 
+**Unicidad:**
 Debe ser único dentro de la tabla (`UNIQUE`)
+
 ```sql
 CONSTRAINT ck_artistas_cuit UNIQUE (cuit)
 ```
@@ -181,6 +200,7 @@ CONSTRAINT ck_artistas_cuit UNIQUE (cuit)
 **Validación:**
 El valor se valida mediante el dominio `dom_cuit`.
 Debe corresponder a un CUIT válido según el formato oficial definido por ARCA:
+
 - Debe contener 11 dígitos numéricos, separados por `-` en tres partes:
   - Un prefijo de 2 dígitos.
   - 8 dígitos correspondientes al DNI o número de sociedad.
@@ -188,11 +208,13 @@ Debe corresponder a un CUIT válido según el formato oficial definido por ARCA:
 - No debe permitir espacios ni caracteres adicionales.
 
 **Formato requerido:**
+
 ```
 XX-XXXXXXXX-X
 ```
 
 Expresión regular:
+
 ```regex
 ^[0-9]{2}-[0-9]{8}-[0-9]$
 ```
@@ -202,17 +224,16 @@ Ejemplos válidos:
 | ----------------|
 | `20-12345678-3` |
 
-
 Ejemplos inválidos:
-| Valor ingresado       | Motivo                                    |
+| Valor ingresado | Motivo |
 | ----------------------| ------------------------------------------|
-| `20123456783`         | Faltan separadores (`-`)                  |
-| `20-1234567-3`        | Cantidad incorrecta de dígitos            |
-| `AA-12345678-3`       | Contiene caracteres no numéricos          |
-| `20_12345678_3`       | Separadores incorrectos (`_`)             |
-| `20-12345678`         | Falta separador (`-`) y dígito verificador|
-| `12345678-3`          | Falta prefijo y separador (`-`)           |
-| `20-12345678-3 `      | Contiene espacios                         |
+| `20123456783` | Faltan separadores (`-`) |
+| `20-1234567-3` | Cantidad incorrecta de dígitos |
+| `AA-12345678-3` | Contiene caracteres no numéricos |
+| `20_12345678_3` | Separadores incorrectos (`_`) |
+| `20-12345678` | Falta separador (`-`) y dígito verificador|
+| `12345678-3` | Falta prefijo y separador (`-`) |
+| `20-12345678-3 ` | Contiene espacios |
 
 #### Campo: `genero`
 
@@ -226,30 +247,33 @@ Requerido (`NOT NULL`)
 
 **Validación:**  
 El valor debe existir en la tabla `generos`.
+
 ```sql
 CONSTRAINT fk_genero_artista FOREIGN KEY (genero) REFERENCES generos(id_genero) ON UPDATE NO ACTION ON DELETE NO ACTION;
 ```
+
 **Referencia:** `generos(id_genero)`
 
-
 ---
+
 ## Tabla: participan
 
 **Tipo:** Dato transaccional de relación
 **Descripción:** Tabla intermedia que representa la relación muchos a muchos entre artistas y conciertos, indicando el rol del artista en el concierto.
 
-| Campo        | Tipo    | Nulo |PK |UK   |FK | Descripción |
-|--------------|---------|------|---|-----|---|-------------|          
-| id_participa | SERIAL  | No   | ✔ | -  | - | Identificador único|    
-| artista      | INTEGER | No   | - | ✔* | ✔ | FK a artistas     |
-| concierto    | INTEGER | No   | - | ✔* | ✔ | FK a conciertos   |   
-| rol          | rol_dom | No   | - | -  | - | Rol del artista en el concierto|
+| Campo        | Tipo    | Nulo | PK  | UK  | FK  | Descripción                     |
+| ------------ | ------- | ---- | --- | --- | --- | ------------------------------- |
+| id_participa | SERIAL  | No   | ✔   | -   | -   | Identificador único             |
+| artista      | INTEGER | No   | -   | ✔\* | ✔   | FK a artistas                   |
+| concierto    | INTEGER | No   | -   | ✔\* | ✔   | FK a conciertos                 |
+| rol          | rol_dom | No   | -   | -   | -   | Rol del artista en el concierto |
 
 ```sql
 CONSTRAINT fk_participan_artista FOREIGN KEY (artista) REFERENCES artistas(id_artista) ON UPDATE NO ACTION ON DELETE NO ACTION;
 CONSTRAINT fk_participan_concierto FOREIGN KEY (concierto) REFERENCES conciertos(id_concierto) ON UPDATE NO ACTION ON DELETE NO ACTION;
 CONSTRAINT ck_participan UNIQUE (artista,concierto); -- CK/AK compuesta
 ```
+
 ### Reglas de Validación — Participan
 
 #### Campo: `rol`
@@ -266,10 +290,12 @@ Requerido (`NOT NULL`)
 El valor se valida mediante el dominio `rol_dom`.
 
 Valores permitidos:
+
 - `PRINCIPAL`
 - `INVITADO`
 
 #### Campo: `artista`
+
 **Descripción:**  
 Referencia al artista que participa del concierto referenciado.
 
@@ -278,20 +304,24 @@ Referencia al artista que participa del concierto referenciado.
 **Obligatoriedad:**
 Requerido (`NOT NULL`)
 
-**Unicidad:** 
+**Unicidad:**
 No es único por sí mismo. Forma parte de una clave única compuesta junto con `concierto`.
+
 ```sql
 CONSTRAINT ck_participan UNIQUE (artista,concierto);
 ```
 
 **Validación:**  
 El valor debe existir en la tabla `artistas`.
+
 ```sql
 CONSTRAINT fk_participan_artista FOREIGN KEY (artista) REFERENCES artistas(id_artista) ON UPDATE NO ACTION ON DELETE NO ACTION;
 ```
+
 **Referencia:** `artistas(id_artista)`
 
 #### Campo: `concierto`
+
 **Descripción:**  
 Referencia al concierto en el que participa el artista referenciado.
 
@@ -300,34 +330,38 @@ Referencia al concierto en el que participa el artista referenciado.
 **Obligatoriedad:**
 Requerido (`NOT NULL`)
 
-**Unicidad:** 
+**Unicidad:**
 No es único por sí mismo. Forma parte de una clave única compuesta junto con `artista`.
+
 ```sql
 CONSTRAINT ck_participan UNIQUE (artista,concierto);
 ```
 
 **Validación:**  
 El valor debe existir en la tabla `conciertos`.
+
 ```sql
 CONSTRAINT fk_participan_concierto FOREIGN KEY (concierto) REFERENCES conciertos(id_concierto) ON UPDATE NO ACTION ON DELETE NO ACTION;
 ```
+
 **Referencia:** `conciertos(id_concierto)`
 
 ---
+
 ## Tabla: conciertos
 
 **Tipo:** Dato transaccional
 
-| Campo          | Tipo         | Nulo |PK |UK |FK | Descripción |
-|----------------|--------------|------|---|---|---|-------------|          
-|id_concierto    | SERIAL      | No   | ✔ | -  | - |Identificador único|    
-|nombre_concierto| TEXT        | No   | - | ✔* | - |Nombre del evento|
-|descripcion     | TEXT        | Si   | - | -  | - | Detalles adicionales del show|
-|fecha           |DATE         | No   | - | ✔* | - |Fecha de realización|
-|hora_inicio     |TIME         | No   | - | ✔* | - |Hora de comienzo|
-|hora_fin        |TIME         | Si   | - | -  | - |Hora estimada de finalización|
-|capacidad_vendida|INTEGER     | No   | - | -  | - |Cantidad de tickets emitidos|
-|lugar          |INTEGER       | No   | - | -  | ✔ |FK a la tabla lugares|
+| Campo             | Tipo    | Nulo | PK  | UK  | FK  | Descripción                   |
+| ----------------- | ------- | ---- | --- | --- | --- | ----------------------------- |
+| id_concierto      | SERIAL  | No   | ✔   | -   | -   | Identificador único           |
+| nombre_concierto  | TEXT    | No   | -   | ✔\* | -   | Nombre del evento             |
+| descripcion       | TEXT    | Si   | -   | -   | -   | Detalles adicionales del show |
+| fecha             | DATE    | No   | -   | ✔\* | -   | Fecha de realización          |
+| hora_inicio       | TIME    | No   | -   | ✔\* | -   | Hora de comienzo              |
+| hora_fin          | TIME    | Si   | -   | -   | -   | Hora estimada de finalización |
+| capacidad_vendida | INTEGER | No   | -   | -   | -   | Cantidad de tickets emitidos  |
+| lugar             | INTEGER | No   | -   | -   | ✔   | FK a la tabla lugares         |
 
 ```sql
 CONSTRAINT fk_concierto_lugar FOREIGN KEY (lugar) REFERENCES lugares(id_lugar) ON UPDATE NO ACTION ON DELETE NO ACTION;
@@ -338,6 +372,7 @@ CONSTRAINT ck_conciertos UNIQUE (nombre_concierto,fecha,hora_inicio); -- CK/AK c
 ### Reglas de Validación — Conciertos
 
 #### Campo: `nombre_concierto`
+
 **Descripción:**  
 Nombre que identifica al evento.
 
@@ -346,23 +381,28 @@ Nombre que identifica al evento.
 **Obligatoriedad:**
 Requerido (`NOT NULL`)
 
-**Unicidad:** 
+**Unicidad:**
 No es único por sí mismo. Forma parte de una clave única compuesta junto con fecha y hora_inicio.
+
 ```sql
 CONSTRAINT ck_conciertos UNIQUE (nombre_concierto, fecha, hora_inicio)
 ```
 
-**Normalización:** 
+**Normalización:**
 El valor debe almacenarse:
+
 - Sin espacios al inicio ni al final.
 - Respetando mayúsculas y minúsculas según el nombre original del evento.
+
 ```sql
 TRIM(nombre_concierto)
-``` 
+```
+
 **Validación:**
 No se permiten cadenas vacías.
 
 #### Campo: `descripcion`
+
 **Descripción:**  
 Detalles adicionales del concierto.
 
@@ -371,20 +411,24 @@ Detalles adicionales del concierto.
 **Obligatoriedad:**
 Opcional (`NULL permitido`)
 
-**Normalización:** 
+**Normalización:**
 El valor debe almacenarse:
+
 - Sin espacios al inicio ni al final.
+
 ```sql
 TRIM(descripcion)
-``` 
+```
 
 **Validación:**  
 Si se proporciona, no puede ser una cadena vacía.
+
 ```sql
 CONSTRAINT chk_descripcion_no_vacia CHECK (descripcion IS NULL OR descripcion <> '')
-``` 
+```
 
 #### Campo: `fecha`
+
 **Descripción:**  
 Fecha en que se realiza el concierto.
 
@@ -395,11 +439,13 @@ Requerido (`NOT NULL`)
 
 **Unicidad:**
 No es único por sí mismo. Forma parte de una clave única compuesta junto con nombre_concierto y hora_inicio.
+
 ```sql
 CONSTRAINT ck_conciertos UNIQUE (nombre_concierto, fecha, hora_inicio)
-``` 
+```
 
 **Formato requerido:**
+
 ```
 YYYY-MM-DD
 ```
@@ -407,17 +453,18 @@ YYYY-MM-DD
 Ejemplos válidos:
 | Valor ingresado|
 |----------------|
-| 2026-05-10     |
+| 2026-05-10 |
 
 Ejemplos inválidos:
-| Valor ingresado| Motivo                      |
+| Valor ingresado| Motivo |
 |----------------|-----------------------------|
-| 10-05-2026     | Formato inválido            |
-| 2026/05/10     | Separador inválido          |
-| 2025-20-06     | Fecha inexistente (mes)     |
-| 2026-02-30     | Fecha inexistente (día)     |
+| 10-05-2026 | Formato inválido |
+| 2026/05/10 | Separador inválido |
+| 2025-20-06 | Fecha inexistente (mes) |
+| 2026-02-30 | Fecha inexistente (día) |
 
 #### Campo: `hora_inicio`
+
 **Descripción:**  
 Hora de comienzo del concierto.
 
@@ -428,6 +475,7 @@ Requerido (`NOT NULL`)
 
 **Unicidad:**
 No es único por sí mismo. Forma parte de una clave única compuesta junto con nombre_concierto y fecha.
+
 ```sql
 CONSTRAINT ck_conciertos UNIQUE (nombre_concierto, fecha, hora_inicio)
 ```
@@ -436,27 +484,29 @@ CONSTRAINT ck_conciertos UNIQUE (nombre_concierto, fecha, hora_inicio)
 El valor debe almacenarse en formato de 24 horas.
 
 **Validación:**
-- No se permiten horas negativas o inexistentes. 
+
+- No se permiten horas negativas o inexistentes.
 
 **Formato requerido:**
+
 ```
 HH:MM:SS
 ```
+
 Ejemplos válidos:
 
-| Valor ingresado    |
-|--------------------|
-| 20:00:00           | 
-| 09:30:00           |
+| Valor ingresado |
+| --------------- |
+| 20:00:00        |
+| 09:30:00        |
 
 Ejemplos inválidos:
 
-| Valor     | Motivo           |
-|----------|-------------------|
-| 25:00:00 | Hora inexistente  |
-| -01:00:00| Hora negativa     |
-| 12.00.00 | Separador inválido|
-
+| Valor     | Motivo             |
+| --------- | ------------------ |
+| 25:00:00  | Hora inexistente   |
+| -01:00:00 | Hora negativa      |
+| 12.00.00  | Separador inválido |
 
 #### Campo: `hora_fin`
 
@@ -471,34 +521,38 @@ Opcional (`NULL permitido`)
 **Normalización:**  
 El valor debe almacenarse en formato de 24 horas.
 
-**Validación:**  
-- No se permiten horas negativas o inexistentes. 
+**Validación:**
+
+- No se permiten horas negativas o inexistentes.
 - Si se especifica, debe ser mayor que hora_inicio.
+
 ```sql
 CONSTRAINT chk_horario_valido CHECK (hora_fin IS NULL OR hora_inicio < hora_fin)
 ```
+
 **Formato requerido:**
+
 ```
 HH:MM:SS
 ```
+
 Ejemplos válidos:
-| Valor ingresado hora_fin    |Valor almacenado hora_inicio|Motivo|
+| Valor ingresado hora_fin |Valor almacenado hora_inicio|Motivo|
 |--------------------|----------------------------|---|
-| 21:00:00           | 20:00:00                   |Hora de fin posterior a hora de inicio|
-| NULL   | 08:00:00     | Hora de fin opcional|
+| 21:00:00 | 20:00:00 |Hora de fin posterior a hora de inicio|
+| NULL | 08:00:00 | Hora de fin opcional|
 
 Ejemplos inválidos:
-| Valor ingresado hora_fin    | Motivo           |
+| Valor ingresado hora_fin | Motivo |
 |----------|-------------------|
-| 25:00:00 |Hora inexistente  |
-| -01:00:00|Hora negativa     |
+| 25:00:00 |Hora inexistente |
+| -01:00:00|Hora negativa |
 | 12.00.00 |Separador inválido|
 
-| Valor ingresado hora_fin    |Valor almacenado hora_inicio|Motivo|
-|--------------------|----------------------------|------|
-| 18:00:00           | 20:00:00                   |Hora de fin anterior a hora de inicio|
-| 09:30:00           | 09:30:00                   |Hora de fin igual a hora de inicio|
-
+| Valor ingresado hora_fin | Valor almacenado hora_inicio | Motivo                                |
+| ------------------------ | ---------------------------- | ------------------------------------- |
+| 18:00:00                 | 20:00:00                     | Hora de fin anterior a hora de inicio |
+| 09:30:00                 | 09:30:00                     | Hora de fin igual a hora de inicio    |
 
 #### Campo: `capacidad_vendida`
 
@@ -510,12 +564,15 @@ Cantidad de entradas vendidas para el concierto.
 **Obligatoriedad:**
 Requerido (`NOT NULL`)
 
-**Valor por defecto:** 
+**Valor por defecto:**
+
 ```sql
 DEFAULT 0
 ```
+
 **Validación:**  
 No puede ser negativo
+
 ```sql
 CONSTRAINT conciertos_capacidad_vendida_check CHECK ((capacidad_vendida >= 0))
 ```
@@ -532,27 +589,275 @@ Requerido (`NOT NULL`)
 
 **Validación:**  
 El valor debe existir en la tabla `lugares`.
+
 ```sql
 CONSTRAINT fk_concierto_lugar FOREIGN KEY (lugar) REFERENCES lugares(id_lugar) ON UPDATE NO ACTION ON DELETE NO ACTION
 ```
+
 **Referencia:** `lugares(id_lugar)`
 
 ---
+
+## Tabla: lugares
+
+**Tipo:** Dato maestro
+
+| Campo           | Tipo         | Nulo | PK  | UK  | FK  | Descripción                |
+| --------------- | ------------ | ---- | --- | --- | --- | -------------------------- |
+| id_lugar        | SERIAL       | No   | ✔   | -   | -   | Identificador único        |
+| nombre_lugar    | VARCHAR(255) | No   | -   | ✔   | -   | Nombre único del lugar     |
+| email_contacto  | dom_email    | No   | -   | ✔   | -   | Email de contacto único    |
+| direccion       | VARCHAR(255) | No   | -   | -   | -   | Dirección física del lugar |
+| capacidad_total | INTEGER      | No   | -   | -   | -   | Capacidad máxima del lugar |
+| ciudad          | INTEGER      | No   | -   | -   | ✔   | FK a ciudades              |
+
+```sql
+CONSTRAINT fk_lugar_ciudad FOREIGN KEY (ciudad) REFERENCES ciudades(id_ciudad) ON UPDATE NO ACTION ON DELETE NO ACTION;
+```
+
+### Reglas de Validación — Lugares
+
+#### Campo: `nombre_lugar`
+
+**Descripción:**  
+Nombre del lugar donde se realizan conciertos.
+
+**Tipo de dato:**
+`VARCHAR(255)`
+
+**Obligatoriedad:**
+Requerido (`NOT NULL`)
+
+**Unicidad:**  
+Debe ser único dentro de la tabla (`UNIQUE`)
+
+```sql
+CONSTRAINT ck_lugar_nombre UNIQUE (nombre_lugar)
+```
+
+**Normalización:**  
+El valor debe almacenarse:
+
+- Respetando el uso de mayúsculas y minúsculas original del nombre del lugar.
+- Sin espacios al inicio ni al final.
+
+```sql
+TRIM(nombre_lugar)
+```
+
+**Validación:**  
+No se permiten cadenas vacías.
+
+---
+
+#### Campo: `email_contacto`
+
+**Descripción:**  
+Dirección de correo electrónico de contacto del lugar.
+
+**Tipo de dato:**
+`dom_email`
+
+**Obligatoriedad:**
+Requerido (`NOT NULL`)
+
+**Unicidad:**  
+Debe ser único dentro de la tabla (`UNIQUE`)
+
+```sql
+CONSTRAINT ck_lugar_email UNIQUE (email_contacto)
+```
+
+**Normalización:**  
+El valor debe almacenarse:
+
+- Sin espacios al inicio ni al final.
+- Sin espacios internos.
+- Convertido a minúsculas.
+
+```sql
+LOWER(TRIM(email_contacto))
+```
+
+**Validación:**  
+El valor se valida mediante el dominio `dom_email`.
+Debe corresponder a una dirección de correo electrónico válida según el formato general:
+
+- Debe contener exactamente un carácter `@`.
+- Debe existir una parte local antes de `@`.
+- Debe existir un dominio válido después de `@`.
+- La extensión del dominio debe tener al menos 2 caracteres.
+- No debe permitir espacios.
+
+**Formato requerido:**
+
+```text
+local@dominio.ext
+```
+
+Expresión regular:
+
+```regex
+^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$
+```
+
+Ejemplos válidos:
+
+| Valor ingresado      | Valor almacenado     |
+| -------------------- | -------------------- |
+| `contacto@lugar.com` | `contacto@lugar.com` |
+| `INFO@LUGAR.COM`     | `info@lugar.com`     |
+| `ventas@lugar.com`   | `ventas@lugar.com`   |
+
+Ejemplos inválidos:
+
+| Valor ingresado       | Motivo                      |
+| --------------------- | --------------------------- |
+| `contactolugar.com`   | Falta `@` y dominio         |
+| `contacto@`           | Falta dominio               |
+| `@lugar.com`          | Falta parte local           |
+| `contacto @lugar.com` | Contiene espacios           |
+| `contacto@lugar`      | Falta extensión del dominio |
+| `contacto@lugar.c`    | Extensión demasiado corta   |
+| `contacto@@lugar.com` | Contiene más de un `@`      |
+
+---
+
+#### Campo: `direccion`
+
+**Descripción:**  
+Dirección física del lugar.
+
+**Tipo de dato:**
+`VARCHAR(255)`
+
+**Obligatoriedad:**
+Requerido (`NOT NULL`)
+
+**Normalización:**  
+El valor debe almacenarse:
+
+- Sin espacios al inicio ni al final.
+
+```sql
+TRIM(direccion)
+```
+
+**Validación:**  
+No se permiten cadenas vacías.
+
+Ejemplos válidos:
+
+| Valor ingresado       |
+| --------------------- |
+| `Av. Corrientes 6094` |
+| `Calle 50 N° 1200`    |
+
+Ejemplos inválidos:
+
+| Valor ingresado | Motivo                 |
+| --------------- | ---------------------- |
+| ``              | Cadena vacía           |
+| `   `           | Solo contiene espacios |
+
+---
+
+#### Campo: `capacidad_total`
+
+**Descripción:**  
+Cantidad máxima de personas permitidas en el lugar.
+
+**Tipo de dato:**
+`INTEGER`
+
+**Obligatoriedad:**
+Requerido (`NOT NULL`)
+
+**Validación:**  
+No puede ser negativa.
+
+```sql
+CONSTRAINT lugares_capacidad_total_check CHECK (capacidad_total >= 0)
+```
+
+Ejemplos válidos:
+
+| Valor ingresado |
+| --------------- |
+| `0`             |
+| `500`           |
+| `12000`         |
+
+Ejemplo inválido:
+
+| Valor ingresado | Motivo             |
+| --------------- | ------------------ |
+| `-1`            | Capacidad negativa |
+
+---
+
+#### Campo: `ciudad`
+
+**Descripción:**  
+Referencia a la ciudad donde se encuentra ubicado el lugar.
+
+**Tipo de dato:**
+`INTEGER`
+
+**Obligatoriedad:**
+Requerido (`NOT NULL`)
+
+**Validación:**  
+El valor debe existir en la tabla `ciudades`.
+
+```sql
+CONSTRAINT fk_lugar_ciudad FOREIGN KEY (ciudad) REFERENCES ciudades(id_ciudad) ON UPDATE NO ACTION ON DELETE NO ACTION;
+```
+
+**Referencia:** `ciudades(id_ciudad)`
+
+---
+
 ## Regla de negocio para conciertos, tipos_entradas y compras
+
 - El valor capacidad_vendida se inicializa en 0 y se incrementa conforme se registran compras de entradas asociadas al concierto.
 
 ---
+
 # 5. Reglas de Calidad de Datos
+
+## Validaciones de formato
+
+- Se debe respetar el formato definido para los datos con DOMAIN (cuit, email..)
+- rol del artista solo admite PRINCIPAL o INVITADO
+- fecha debe almacenarse como "yyyy-mm-dd"
+- hora_inicio debe tener formato "hh-mm-ss"
+
+## Restricciones de unicidad
+
+- No se permiten artistas duplicados
+- nombre, email y cuit del artista son únicos
+- Un artista no puede participar más de una vez en el mismo concierto
+- La combinación (artista, concierto) debe ser única
+- La combinación (nombre_concierto, fecha, hora_inicio) debe ser única
+- El campo email_contacto debe ser único en la tabla lugares.
+- El campo nombre_lugar debe ser único en la tabla lugares.
+
+## Consistencia de los datos
+
+- hora_fin tiene que ser mayor que hora_inicio
+- capacidad_vendida y capacidad_total deben ser positivas
+
+---
 
 # 6. Clasificación de Datos
 
-| Tabla        | Clasificación sugerida     | Comentario    |
-| -------------| ---------------------------| --------------|
-| `conciertos` |                            |               |
-| `artistas`   |                            |               |
-| `lugares`    |                            |               |
-| `participan` |                            |               |
-
+| Tabla        | Clasificación sugerida | Comentario |
+| ------------ | ---------------------- | ---------- |
+| `conciertos` |                        |            |
+| `artistas`   |                        |            |
+| `lugares`    |                        |            |
+| `participan` |                        |            |
 
 # 7. Diagrama Entidad–Relación (Mermaid)
 
@@ -561,7 +866,7 @@ erDiagram
 
 CONCIERTOS {
     serial id_concierto PK
-    text nombre_concierto 
+    text nombre_concierto
     text descripcion
     date fecha
     time hora_inicio
@@ -591,7 +896,7 @@ LUGARES {
     dom_email[varchar(255)] email_contacto
     varchar(255) direccion
     integer capacidad_total
-    integer ciudad FK 
+    integer ciudad FK
 }
 
 CONCIERTOS }o--|| LUGARES : se_realiza_en
