@@ -859,13 +859,13 @@ CONSTRAINT fk_lugar_ciudad FOREIGN KEY (ciudad) REFERENCES ciudades(id_ciudad) O
 - Los campos que identifican entidades de manera única deben poseer restricción `UNIQUE`.
 - Deben ser únicos:
   - Los campos `nombre_artista`, `email_contacto` y `cuit` de la tabla artistas.
-    - RN: No pueden existir artistas con el mismo nombre, email o cuit.
+    - No pueden existir artistas con el mismo nombre, email o cuit.
   - La combinación (`artista`, `concierto`) de la tabla participan.     
-    - RN: Un artista no puede participar más de una vez en el mismo concierto.
+    - Un artista no puede participar más de una vez en el mismo concierto.
   - La combinación (`nombre_concierto`, `fecha`, `hora_inicio`) de la tabla conciertos.
-    - RN: No pueden existir conciertos duplicados con el mismo nombre, fecha y hora de inicio.
+    - No pueden existir conciertos duplicados con el mismo nombre, fecha y hora de inicio.
   - Los campos `nombre_lugar` y `email_contacto` de la tabla lugares.
-    - RN: No pueden existir lugares con el mismo nombre o email.
+    - No pueden existir lugares con el mismo nombre o email.
 
 ## 5.3. Integridad referencial
 
