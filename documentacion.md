@@ -73,10 +73,10 @@ CHECK (VALUE IN ('PRINCIPAL', 'INVITADO'));
 | Campo             | Tipo    | Nulo | PK  | UK  | FK  | Descripción                   |
 | ----------------- | ------- | ---- | --- | --- | --- | ----------------------------- |
 | id_concierto      | SERIAL  | No   | ✔   | -   | -   | Identificador único           |
-| nombre_concierto  | TEXT    | No   | -   | ✔\* | -   | Nombre del evento             |
+| nombre_concierto  | TEXT    | No   | -   | ✔   | -   | Nombre del evento             |
 | descripcion       | TEXT    | Si   | -   | -   | -   | Detalles adicionales del show |
-| fecha             | DATE    | No   | -   | ✔\* | -   | Fecha de realización          |
-| hora_inicio       | TIME    | No   | -   | ✔\* | -   | Hora de comienzo              |
+| fecha             | DATE    | No   | -   | ✔   | -   | Fecha de realización          |
+| hora_inicio       | TIME    | No   | -   | ✔   | -   | Hora de comienzo              |
 | hora_fin          | TIME    | Si   | -   | -   | -   | Hora estimada de finalización |
 | capacidad_vendida | INTEGER | No   | -   | -   | -   | Cantidad de tickets emitidos  |
 | lugar             | INTEGER | No   | -   | -   | ✔   | FK a la tabla lugares         |
